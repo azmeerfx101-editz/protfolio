@@ -1,0 +1,1017 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Azmeer | 3D Portfolio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Poppins', sans-serif;
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+        
+        .gradient-text {
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        
+        .glass-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        
+        .skill-pill {
+            transition: all 0.3s ease;
+            transform-style: preserve-3d;
+        }
+        
+        .skill-pill:hover {
+            transform: translateY(-5px) rotateX(10deg);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+        
+        .project-card {
+            perspective: 1000px;
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease;
+        }
+        
+        .project-card:hover {
+            transform: translateY(-10px) rotateY(5deg);
+        }
+        
+        .project-card-inner {
+            transform-style: preserve-3d;
+            transition: transform 0.5s ease;
+        }
+        
+        .project-card:hover .project-card-inner {
+            transform: rotateY(10deg);
+        }
+        
+        .floating {
+            animation: float 6s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .vanta-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+        }
+        
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -5px;
+            left: 0;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -30px;
+            top: 0;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+        }
+        
+        .timeline-line::after {
+            content: '';
+            position: absolute;
+            left: -23px;
+            top: 15px;
+            bottom: -15px;
+            width: 2px;
+            background: linear-gradient(to bottom, #3b82f6, #8b5cf6);
+        }
+        
+        .reactbits-badge {
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .reactbits-badge::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: conic-gradient(
+                transparent,
+                transparent,
+                transparent,
+                #3b82f6
+            );
+            animation: rotate 4s linear infinite;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .reactbits-badge span {
+            position: relative;
+            z-index: 1;
+            background: linear-gradient(135deg, #1e40af, #5b21b6);
+        }
+        
+        /* Sidebar styles */
+        #mobile-sidebar {
+            position: fixed;
+            top: 0;
+            right: -100%;
+            width: 75%;
+            max-width: 320px;
+            height: 100%;
+            background: rgba(17, 24, 39, 0.95);
+            backdrop-filter: blur(10px);
+            border-left: 1px solid rgba(255, 255, 255, 0.2);
+            transition: right 0.3s ease-in-out, opacity 0.3s ease-in-out;
+            opacity: 0;
+            z-index: 50;
+        }
+        
+        #mobile-sidebar.open {
+            right: 0;
+            opacity: 1;
+        }
+        
+        #sidebar-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+            z-index: 40;
+        }
+        
+        #sidebar-overlay.open {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .sidebar-link {
+            position: relative;
+            display: block;
+            padding: 12px 24px;
+            color: #e5e7eb;
+            font-weight: 500;
+            transition: color 0.2s ease, transform 0.2s ease;
+        }
+        
+        .sidebar-link:hover, .sidebar-link:focus {
+            color: #3b82f6;
+            transform: translateX(5px);
+        }
+        
+        .sidebar-link::after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: 8px;
+            left: 24px;
+            background: linear-gradient(90deg, #3b82f6, #8b5cf6);
+            transition: width 0.3s ease;
+        }
+        
+        .sidebar-link:hover::after {
+            width: 50%;
+        }
+        
+        /* Custom responsive styles */
+        @media (max-width: 767px) {
+            .hero-section {
+                padding-top: 100px;
+            }
+            
+            .hero-title {
+                font-size: 2.5rem;
+                line-height: 1.2;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.1rem;
+            }
+            
+            .project-card, .skill-card {
+                margin-bottom: 1.5rem;
+            }
+            
+            .contact-section {
+                padding-top: 4rem;
+                padding-bottom: 4rem;
+            }
+            
+            .section-title {
+                font-size: 2.5rem;
+            }
+            
+            .section-description {
+                font-size: 1rem;
+            }
+            
+            .glass-card {
+                padding: 1.5rem;
+            }
+        }
+        
+        @media (min-width: 768px) and (max-width: 1023px) {
+            .hero-title {
+                font-size: 4rem;
+            }
+            
+            .hero-subtitle {
+                font-size: 1.25rem;
+            }
+            
+            .section-title {
+                font-size: 3rem;
+            }
+        }
+        
+        /* Accessibility improvements */
+        a:focus, button:focus {
+            outline: 2px solid #3b82f6;
+            outline-offset: 2px;
+        }
+        
+        /* Image styling to prevent disappearing */
+        img.portfolio-image {
+            display: block;
+            max-width: 100%;
+            height: auto;
+        }
+        
+        /* Profile image styles */
+        .profile-image-container {
+            position: relative;
+            width: 130px;
+            height: 130px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            padding: 4px;
+            margin: 0 auto;
+            box-shadow: 0 4px 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .profile-image-frame {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .profile-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            transition: transform 0.5s ease;
+        }
+        
+        .profile-image-container:hover .profile-image {
+            transform: scale(1.05);
+        }
+
+        /* Logo container styles */
+        .logo-container {
+            position: relative;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            padding: 3px;
+            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.3);
+        }
+        
+        .logo-frame {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            overflow: hidden;
+        }
+        
+        .logo-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-900 text-gray-100">
+    <!-- 3D Background -->
+    <div id="vanta-bg" class="vanta-bg"></div>
+    
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 bg-gray-900/80 backdrop-blur-md py-4 px-4 sm:px-6">
+        <div class="container mx-auto flex justify-between items-center">
+            <div class="flex items-center space-x-2">
+                <div class="logo-container w-12 h-12 sm:w-14 sm:h-14">
+                    <div class="logo-frame">
+                        <img src="upscalemedia-transformed.png" alt="Azmeer Logo" class="logo-image">
+                    </div>
+                </div>
+                <span class="text-xl font-bold gradient-text">Azmeer Fx</span>
+            </div>
+            
+            <div class="hidden md:flex items-center space-x-4 lg:space-x-8">
+                <a href="#home" class="nav-link font-medium">Home</a>
+                <a href="#about" class="nav-link font-medium">About</a>
+                <a href="#skills" class="nav-link font-medium">Skills</a>
+                <a href="#projects" class="nav-link font-medium">Projects</a>
+                <a href="#contact" class="nav-link font-medium">Contact</a>
+<a href="https://wa.me/923088748656" target="_blank" rel="noopener noreferrer">
+  <button class="px-4 py-2 lg:px-6 lg:py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full font-medium hover:opacity-90 transition-all transform hover:scale-105">
+    Hire Me
+  </button>
+</a>
+
+            
+            <!-- Mobile menu button -->
+            <button id="mobile-menu-button" class="md:hidden text-white focus:outline-none" aria-label="Toggle menu">
+                <i id="menu-icon" class="fas fa-bars text-2xl"></i>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Mobile Sidebar -->
+    <div id="mobile-sidebar" class="md:hidden">
+        <div class="flex justify-between items-center p-4 border-b border-gray-700">
+            <div class="logo-container w-10 h-10 sm:w-12 sm:h-12">
+                <div class="logo-frame">
+                    <img src="image.jpg" alt="Azmeer Logo" class="logo-image">
+                </div>
+            </div>
+            <button id="close-sidebar" class="text-white focus:outline-none" aria-label="Close menu">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+        <div class="flex flex-col space-y-2 p-4">
+            <a href="#home" class="sidebar-link">Home</a>
+            <a href="#about" class="sidebar-link">About</a>
+            <a href="#skills" class="sidebar-link">Skills</a>
+            <a href="#projects" class="sidebar-link">Projects</a>
+            <a href="#contact" class="sidebar-link">Contact</a>
+            <button class="w-full px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full font-medium hover:opacity-90 transition-all transform hover:scale-105 mt-4">
+                Hire Me
+            </button>
+        </div>
+    </div>
+    <div id="sidebar-overlay" class="md:hidden"></div>
+
+    <!-- Hero Section -->
+    <section id="home" class="min-h-screen flex items-center justify-center pt-20 px-4 sm:px-6 hero-section">
+        <div class="container mx-auto text-center relative z-10">
+            <div class="floating profile-image-container mb-6 sm:mb-8">
+                <div class="profile-image-frame">
+                    <img src="tht.jpeg" alt="Azmeer" class="profile-image">
+                </div>
+            </div>
+            
+            <h1 class="text-4xl sm:text-5xl md:text-7xl font-bold mb-4 hero-title">
+                <span class="gradient-text">Azmeer</span> <span class="text-white">Fx</span>
+            </h1>
+            
+            <div class="relative inline-block">
+                <div class="absolute -inset-1 bg-gradient-to-r from-blue-500 to-purple-500 rounded-lg blur opacity-75"></div>
+                <div class="relative px-4 py-2 sm:px-6 sm:py-2 bg-gray-900 rounded-lg">
+                    <p class="text-lg sm:text-xl md:text-2xl font-medium hero-subtitle">
+                        <span class="text-blue-400">Professional Video Editor</span> & <span class="text-purple-400">Animator</span>
+                    </p>
+                </div>
+            </div>
+            
+            <p class="text-base sm:text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mt-6 sm:mt-8 mb-8 sm:mb-10 hero-description">
+                “Creating captivating visual stories with professional editing techniques and motion graphics.”
+            </p>
+            
+            <div class="flex flex-col sm:flex-row justify-center gap-3 sm:gap-5">
+                <button id="view-projects-btn" class="px-6 py-2 sm:px-8 sm:py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full font-semibold hover:opacity-90 transition-all transform hover:scale-105 flex items-center justify-center space-x-2 mx-2 sm:mx-0">
+                    <span>View Projects</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+                <button class="px-6 py-2 sm:px-8 sm:py-3 border-2 border-white/20 text-white rounded-full font-semibold hover:bg-white/10 transition-all transform hover:scale-105 flex items-center justify-center space-x-2 backdrop-blur-sm mx-2 sm:mx-0">
+                    <i class="fas fa-file-download"></i>
+                    <span>Download CV</span>
+                </button>
+            </div>
+            
+            <div class="mt-10 sm:mt-16 flex justify-center">
+                <div class="flex space-x-4 sm:space-x-6">
+                    <a href="https://github.com/Azmeer101" target="_blank" rel="noopener noreferrer" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-blue-500 transition-colors" aria-label="GitHub">
+                        <i class="fab fa-github text-base sm:text-lg"></i>
+                    </a>
+                    <a href="https://www.instagram.com/heartless_azmeer_101/" target="_blank" rel="noopener noreferrer" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-pink-600 transition-colors" aria-label="Instagram">
+                        <i class="fab fa-instagram text-base sm:text-lg"></i>
+                    </a>
+                    <a href="https://www.facebook.com/heartlessazmeer/" target="_blank" rel="noopener noreferrer" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-blue-600 transition-colors" aria-label="Facebook">
+                        <i class="fab fa-facebook-f text-base sm:text-lg"></i>
+                    </a>
+                    <a href="https://wa.me/03088748656" target="_blank" rel="noopener noreferrer" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-green-500 transition-colors" aria-label="WhatsApp">
+                        <i class="fab fa-whatsapp text-base sm:text-lg"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="py-16 sm:py-20 px-4 sm:px-6 bg-gray-900/50 backdrop-blur-sm">
+        <div class="container mx-auto">
+            <div class="text-center mb-10 sm:mb-16">
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 section-title">
+                    <span class="gradient-text">About</span> <span class="text-white">Me</span>
+                </h2>
+                <p class="text-base sm:text-lg text-gray-400 max-w-3xl mx-auto section-description">
+                    Get to know the person behind the code and designs
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 items-center">
+                <div class="relative">
+                    <div class="glass-card p-1 sm:p-2 rounded-2xl">
+                        <img src="tht.jpeg" alt="Azmeer" class="portfolio-image w-full h-auto rounded-2xl">
+                    </div>
+                    <div class="absolute -bottom-4 -right-4 sm:-bottom-6 sm:-right-6 reactbits-badge rounded-full">
+                        <span class="flex items-center px-3 py-1 sm:px-4 sm:py-2 rounded-full text-white text-xs sm:text-sm font-medium">
+                            <i class="fab fa-react mr-1 sm:mr-2 text-xs sm:text-sm"></i> Adobe Expert
+                        </span>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-2xl sm:text-3xl font-bold mb-4 sm:mb-6 text-white">Who am I?</h3>
+                    <p class="text-gray-300 mb-4 sm:mb-6 text-sm sm:text-base">
+                        I'm Azmee_Fx, a passionate video editor and motion graphics artist with over 5 years of experience crafting cinematic, engaging, and visually stunning content. I specialize in Adobe Premiere Pro, After Effects, and DaVinci Resolve, producing everything from short films and YouTube content to social media ads and animations.
+                    <p class="text-gray-300 mb-6 sm:mb-8 text-sm sm:text-base">
+                        My approach blends technical expertise with creative storytelling to deliver edits that not only look polished but also connect with audiences. I'm constantly exploring new tools, techniques, and trends to stay at the forefront of the video editing and animation industry.
+                    </p>
+                    
+                    <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-6 sm:mb-8">
+                        <div class="glass-card p-3 sm:p-4 rounded-xl">
+                            <div class="text-blue-400 mb-1 sm:mb-2">
+                                <i class="fas fa-code text-lg sm:text-xl"></i>
+                            </div>
+                            <h4 class="font-bold text-white mb-1 text-sm sm:text-base">100+ Projects</h4>
+                            <p class="text-xs sm:text-sm text-gray-400">Completed successfully</p>
+                        </div>
+                        <div class="glass-card p-3 sm:p-4 rounded-xl">
+                            <div class="text-purple-400 mb-1 sm:mb-2">
+                                <i class="fas fa-users text-lg sm:text-xl"></i>
+                            </div>
+                            <h4 class="font-bold text-white mb-1 text-sm sm:text-base">87+ Clients</h4>
+                            <p class="text-xs sm:text-sm text-gray-400">Satisfied worldwide</p>
+                        </div>
+                    </div>
+                    
+                    <div class="flex flex-wrap gap-2 sm:gap-4">
+                        <a href="https://wa.me/03088748656" target="_blank" rel="noopener noreferrer" class="px-4 py-1 sm:px-6 sm:py-2 border border-white/20 text-white rounded-full font-medium text-sm sm:text-base hover:bg-white/10 transition-all">
+                            <i class="fas fa-comment-dots mr-1 sm:mr-2 text-xs sm:text-sm"></i> Let's Talk
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Skills Section -->
+    <section id="skills" class="py-16 sm:py-20 px-4 sm:px-6 bg-gray-900/50 backdrop-blur-sm">
+        <div class="container mx-auto">
+            <div class="text-center mb-10 sm:mb-16">
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 section-title">
+                    My <span class="gradient-text">Skills</span>
+                </h2>
+                <p class="text-base sm:text-lg text-gray-400 max-w-3xl mx-auto section-description">
+                    Technologies and tools I'm proficient with
+                </p>
+            </div>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-12 sm:mb-16">
+                <div class="glass-card p-4 sm:p-6 rounded-2xl">
+                    <div class="flex items-center mb-3 sm:mb-4">
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 mr-3 sm:mr-4">
+                            <i class="fas fa-laptop-code text-lg sm:text-xl"></i>
+                        </div>
+                        <h3 class="text-lg sm:text-xl font-bold text-white">Video Editing</h3>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <div class="skill-pill px-3 py-1 sm:px-4 sm:py-2 bg-blue-500/20 text-blue-400 rounded-full text-xs sm:text-sm">
+                            Adobe Premiere Pro
+                        </div>
+                        <div class="skill-pill px-3 py-1 sm:px-4 sm:py-2 bg-blue-500/20 text-blue-400 rounded-full text-xs sm:text-sm">
+                            DaVinci Resolve
+                        </div>
+                        <div class="skill-pill px-3 py-1 sm:px-4 sm:py-2 bg-blue-500/20 text-blue-400 rounded-full text-xs sm:text-sm">
+                            Final Cut Pro
+                        </div>
+                        <div class="skill-pill px-3 py-1 sm:px-4 sm:py-2 bg-blue-500/20 text-blue-400 rounded-full text-xs sm:text-sm">
+                            CapCut
+                        </div>
+                        <div class="skill-pill px-3 py-1 sm:px-4 sm:py-2 bg-blue-500/20 text-blue-400 rounded-full text-xs sm:text-sm">
+                            Filmora
+                        </div>
+            
+                    </div>
+                </div>
+                
+                <div class="glass-card p-4 sm:p-6 rounded-2xl">
+                    <div class="flex items-center mb-3 sm:mb-4">
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 mr-3 sm:mr-4">
+                            <i class="fas fa-paint-brush text-lg sm:text-xl"></i>
+                        </div>
+                        <h3 class="text-lg sm:text-xl font-bold text-white">Design & Visuals</h3>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <div class="skill-pill px-3 py-1 sm:px-4 sm:py-2 bg-purple-500/20 text-purple-400 rounded-full text-xs sm:text-sm">
+                            Photoshop
+                        </div>
+                        <div class="skill-pill px-3 py-1 sm:px-4 sm:py-2 bg-purple-500/20 text-purple-400 rounded-full text-xs sm:text-sm">
+                            Illustrator
+                        </div>
+                        <div class="skill-pill px-3 py-1 sm:px-4 sm:py-2 bg-purple-500/20 text-purple-400 rounded-full text-xs sm:text-sm">
+                            Canva
+                        </div>
+                        <div class="skill-pill px-3 py-1 sm:px-4 sm:py-2 bg-purple-500/20 text-purple-400 rounded-full text-xs sm:text-sm">
+                            Lightroom
+                        </div>
+                        <div class="skill-pill px-3 py-1 sm:px-4 sm:py-2 bg-purple-500/20 text-purple-400 rounded-full text-xs sm:text-sm">
+                            UI/UX
+                        </div>
+                       
+                    </div>
+                </div>
+                
+                <div class="glass-card p-4 sm:p-6 rounded-2xl">
+                    <div class="flex items-center mb-3 sm:mb-4">
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 mr-3 sm:mr-4">
+                            <i class="fas fa-server text-lg sm:text-xl"></i>
+                        </div>
+                        <h3 class="text-lg sm:text-xl font-bold text-white">Motion Graphics & Animation</h3>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <div class="skill-pill px-3 py-1 sm:px-4 sm:py-2 bg-green-500/20 text-green-400 rounded-full text-xs sm:text-sm">
+                            Adobe After Effects
+                        </div>
+                        <div class="skill-pill px-3 py-1 sm:px-4 sm:py-2 bg-green-500/20 text-green-400 rounded-full text-xs sm:text-sm">
+                            Blender
+                        </div>
+                        <div class="skill-pill px-3 py-1 sm:px-4 sm:py-2 bg-green-500/20 text-green-400 rounded-full text-xs sm:text-sm">
+                            Cinema 4D
+                        </div>
+<div class="skill-pill px-3 py-1 sm:px-4 sm:py-2 bg-green-500/20 text-green-400 rounded-full text-xs sm:text-sm">
+    Moho / Toon Boom
+</div>
+
+
+                    </div>
+                </div>
+                
+                <div class="glass-card p-4 sm:p-6 rounded-2xl">
+                    <div class="flex items-center mb-3 sm:mb-4">
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-yellow-500/20 flex items-center justify-center text-yellow-400 mr-3 sm:mr-4">
+                            <i class="fas fa-tools text-lg sm:text-xl"></i>
+                        </div>
+                        <h3 class="text-lg sm:text-xl font-bold text-white">Others</h3>
+                    </div>
+                    <div class="flex flex-wrap gap-2">
+                        <div class="skill-pill px-3 py-1 sm:px-4 sm:py-2 bg-yellow-500/20 text-yellow-400 rounded-full text-xs sm:text-sm">
+                            Color Grading
+                        </div>
+                        <div class="skill-pill px-3 py-1 sm:px-4 sm:py-2 bg-yellow-500/20 text-yellow-400 rounded-full text-xs sm:text-sm">
+                            Sound Design
+                        </div>
+                        <div class="skill-pill px-3 py-1 sm:px-4 sm:py-2 bg-yellow-500/20 text-yellow-400 rounded-full text-xs sm:text-sm">
+                            Storyboarding
+                        </div>
+                        <div class="skill-pill px-3 py-1 sm:px-4 sm:py-2 bg-yellow-500/20 text-yellow-400 rounded-full text-xs sm:text-sm">
+                            Social Media Editing (Reels, Shorts, Ads)
+                        </div>
+                        
+                    </div>
+                </div>
+            </div>
+
+            <div class="glass-card p-6 sm:p-8 rounded-2xl mt-8">
+                <div class="flex flex-col sm:flex-row items-center mb-6 sm:mb-8">
+                    <div class="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 mr-0 sm:mr-6 mb-4 sm:mb-0">
+                        <i class="fab fa-react text-xl sm:text-3xl"></i>
+                    </div>
+                    <div class="text-center sm:text-left">
+                        <h3 class="text-xl sm:text-2xl font-bold text-white">Creative Editing Skills</h3>
+                        <p class="text-gray-400 text-sm sm:text-base">Professional editing and animation techniques I’ve mastered</p>
+                    </div>
+                </div>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+                    <div class="p-4 sm:p-6 rounded-xl bg-gray-800/50 border border-gray-700 hover:border-blue-500 transition-colors">
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-400 mb-3 sm:mb-4">
+                            <i class="fas fa-layer-group"></i>
+                        </div>
+                        <h4 class="text-lg sm:text-xl font-bold text-white mb-1 sm:mb-2">Cinematic Editing</h4>
+                        <p class="text-gray-400 text-xs sm:text-sm">
+                            Crafted 200+ polished videos using Adobe Premiere Pro with seamless cuts, pacing, and transitions.
+                    </div>
+                    
+                    <div class="p-4 sm:p-6 rounded-xl bg-gray-800/50 border border-gray-700 hover:border-purple-500 transition-colors">
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400 mb-3 sm:mb-4">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <h4 class="text-lg sm:text-xl font-bold text-white mb-1 sm:mb-2">Motion Graphics</h4>
+                        <p class="text-gray-400 text-xs sm:text-sm">
+                           Designed engaging animations and visual effects in After Effects to enhance storytelling.
+                        </p>
+                    </div>
+                    
+                    <div class="p-4 sm:p-6 rounded-xl bg-gray-800/50 border border-gray-700 hover:border-green-500 transition-colors">
+                        <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-green-500/20 flex items-center justify-center text-green-400 mb-3 sm:mb-4">
+                            <i class="fas fa-mobile-alt"></i>
+                        </div>
+                        <h4 class="text-lg sm:text-xl font-bold text-white mb-1 sm:mb-2">Social Media Content</h4>
+                        <p class="text-gray-400 text-xs sm:text-sm">
+                            Created reels, shorts, and branded edits optimized for YouTube, Instagram, and TikTok audiences
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+<!-- Projects Section -->
+<section id="projects" class="py-16 sm:py-20 px-4 sm:px-6 bg-gray-900/50 backdrop-blur-sm">
+  <div class="container mx-auto">
+    <div class="text-center mb-10 sm:mb-16">
+      <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 section-title">
+        My <span class="gradient-text">Projects</span>
+      </h2>
+      <p class="text-base sm:text-lg text-gray-400 max-w-3xl mx-auto section-description">
+        A showcase of my best video edits and animations
+      </p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
+
+      <!-- Project 1 -->
+      <div class="project-card">
+        <div class="project-card-inner glass-card rounded-2xl overflow-hidden h-full">
+          <div class="relative">
+            <video class="portfolio-video w-full h-80 sm:h-96 object-contain" loop playsinline controls muted>
+              <source src="cinematic.mp4" type="video/mp4">
+              Your browser does not support the video tag.
+            </video>
+          </div>
+          <div class="p-4 sm:p-6">
+            <h3 class="text-lg sm:text-xl font-bold text-white mb-2">Cinematic Short Film Edit</h3>
+            <p class="text-gray-400 text-xs sm:text-sm mb-3 sm:mb-4">
+              A dramatic short film edit focused on pacing, storytelling, and cinematic transitions.
+            </p>
+            <div class="flex flex-wrap gap-1 sm:gap-2 mb-3 sm:mb-4">
+              <span class="px-2 py-1 sm:px-3 sm:py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs">Premiere Pro</span>
+              <span class="px-2 py-1 sm:px-3 sm:py-1 bg-purple-500/20 text-purple-400 rounded-full text-xs">After Effects</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 2 -->
+      <div class="project-card">
+        <div class="project-card-inner glass-card rounded-2xl overflow-hidden h-full">
+          <div class="relative">
+            <video class="portfolio-video w-full h-80 sm:h-96 object-contain" loop playsinline controls muted>
+              <source src="091.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="p-4 sm:p-6">
+            <h3 class="text-lg sm:text-xl font-bold text-white mb-2">Social Media Reel</h3>
+            <p class="text-gray-400 text-xs sm:text-sm mb-3 sm:mb-4">
+              A high-energy Instagram reel designed with trendy cuts, text animations, and sound sync.
+            </p>
+            <div class="flex flex-wrap gap-1 sm:gap-2 mb-3 sm:mb-4">
+              <span class="px-2 py-1 sm:px-3 sm:py-1 bg-pink-500/20 text-pink-400 rounded-full text-xs">CapCut</span>
+              <span class="px-2 py-1 sm:px-3 sm:py-1 bg-green-500/20 text-green-400 rounded-full text-xs">DaVinci Resolve</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Project 3 -->
+      <div class="project-card">
+        <div class="project-card-inner glass-card rounded-2xl overflow-hidden h-full">
+          <div class="relative">
+            <video class="portfolio-video w-full h-80 sm:h-96 object-contain" loop playsinline controls muted>
+              <source src="project 1.mp4" type="video/mp4">
+            </video>
+          </div>
+          <div class="p-4 sm:p-6">
+            <h3 class="text-lg sm:text-xl font-bold text-white mb-2">Motion Graphics Animation</h3>
+            <p class="text-gray-400 text-xs sm:text-sm mb-3 sm:mb-4">
+              A creative animated sequence using After Effects with typography and logo animation.
+            </p>
+            <div class="flex flex-wrap gap-1 sm:gap-2 mb-3 sm:mb-4">
+              <span class="px-2 py-1 sm:px-3 sm:py-1 bg-purple-500/20 text-purple-400 rounded-full text-xs">After Effects</span>
+              <span class="px-2 py-1 sm:px-3 sm:py-1 bg-yellow-500/20 text-yellow-400 rounded-full text-xs">Motion Graphics</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+
+    <!-- Contact Section -->
+    <section id="contact" class="py-16 sm:py-20 px-4 sm:px-6 bg-gray-900/50 backdrop-blur-sm contact-section">
+        <div class="container mx-auto">
+            <div class="text-center mb-10 sm:mb-16">
+                <h2 class="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 section-title">
+                    <span class="gradient-text">Contact</span> <span class="text-white">Me</span>
+                </h2>
+                <p class="text-base sm:text-lg text-gray-400 max-w-3xl mx-auto section-description">
+                    Let's work together and create something amazing
+                </p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12">
+                <div>
+                    <h3 class="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6">Get in Touch</h3>
+                
+                    <div class="space-y-4 sm:space-y-6">
+                        <div class="flex items-start">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 mr-4 sm:mr-6">
+                                <i class="fas fa-envelope text-sm sm:text-base"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white mb-1 text-sm sm:text-base">Email</h4>
+                                <p class="text-gray-400 text-xs sm:text-sm">azmeerfx101@gmail.com</p>
+                            </div>
+                        </div>
+                    
+                        <div class="flex items-start">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400 mr-4 sm:mr-6">
+                                <i class="fas fa-phone-alt text-sm sm:text-base"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white mb-1 text-sm sm:text-base">Phone</h4>
+                                <p class="text-gray-400 text-xs sm:text-sm">03704911022</p>
+                            </div>
+                        </div>
+                    
+                        <div class="flex items-start">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-green-500/20 flex items-center justify-center text-green-400 mr-4 sm:mr-6">
+                                <i class="fas fa-map-marker-alt text-sm sm:text-base"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white mb-1 text-sm sm:text-base">Location</h4>
+                                <p class="text-gray-400 text-xs sm:text-sm">House # 84/C, Street # 2, Green Town, Sahiwal, Pakistan</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-8 sm:mt-10">
+                        <h4 class="font-bold text-white mb-3 sm:mb-4 text-sm sm:text-base">Follow Me</h4>
+                        <div class="flex space-x-3 sm:space-x-4">
+                            <a href="https://github.com/Azmeer101" target="_blank" rel="noopener noreferrer" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-blue-500 transition-colors" aria-label="GitHub">
+                                <i class="fab fa-github text-sm sm:text-base"></i>
+                            </a>
+                            <a href="https://www.instagram.com/heartless_azmeer_101" target="_blank" rel="noopener noreferrer" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-pink-600 transition-colors" aria-label="Instagram">
+                                <i class="fab fa-instagram text-sm sm:text-base"></i>
+                            </a>
+                            <a href="https://www.facebook.com/heartlessazmeer" target="_blank" rel="noopener noreferrer" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-blue-600 transition-colors" aria-label="Facebook">
+                                <i class="fab fa-facebook-f text-sm sm:text-base"></i>
+                            </a>
+                            <a href="https://wa.me/03088748656" target="_blank" rel="noopener noreferrer" class="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center hover:bg-green-500 transition-colors" aria-label="WhatsApp">
+                                <i class="fab fa-whatsapp text-sm sm:text-base"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="glass-card p-6 sm:p-8 rounded-2xl flex flex-col items-center justify-center">
+                    <h3 class="text-xl sm:text-2xl font-bold text-white mb-4 sm:mb-6 text-center">Send a Message</h3>
+                    <a href="https://wa.me/03088748656" target="_blank" class="w-full px-4 py-2 sm:px-6 sm:py-3 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg font-semibold hover:opacity-90 transition-all transform hover:scale-[1.01] flex items-center justify-center space-x-2 text-sm sm:text-base">
+                        <i class="fab fa-whatsapp"></i>
+                        <span>CONTACT ON WHATSAPP</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-8 sm:py-10 px-4 sm:px-6 bg-gray-900 border-t border-gray-800">
+        <div class="container mx-auto">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="flex items-center space-x-2 mb-4 sm:mb-0">
+                    <div class="logo-container w-10 h-10 sm:w-12 sm:h-12">
+                        <div class="logo-frame">
+                            <img src="upscalemedia-transformed.png" alt="Azmeer Logo" class="logo-image">
+                        </div>
+                    </div>
+                    <span class="text-lg sm:text-xl font-bold gradient-text">Azmeer Fx</span>
+                </div>
+                
+                <div class="flex flex-wrap justify-center gap-x-4 sm:gap-x-6 gap-y-2 mb-4 sm:mb-0">
+                    <a href="#home" class="text-gray-400 hover:text-white transition-colors text-sm sm:text-base">Home</a>
+                    <a href="#about" class="text-gray-400 hover:text-white transition-colors text-sm sm:text-base">About</a>
+                    <a href="#skills" class="text-gray-400 hover:text-white transition-colors text-sm sm:text-base">Skills</a>
+                    <a href="#projects" class="text-gray-400 hover:text-white transition-colors text-sm sm:text-base">Projects</a>
+                    <a href="#contact" class="text-gray-400 hover:text-white transition-colors text-sm sm:text-base">Contact</a>
+                </div>
+                
+                <div class="text-gray-500 text-xs sm:text-sm text-center sm:text-right">
+                    © 2021 Azmeer_fx. All rights reserved.
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize Vanta.js background
+        VANTA.NET({
+            el: "#vanta-bg",
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            minHeight: 200.00,
+            minWidth: 200.00,
+            scale: 1.00,
+            scaleMobile: 1.00,
+            color: 0x3b82f6,
+            backgroundColor: 0x111827,
+            points: 12.00,
+            maxDistance: 20.00,
+            spacing: 15.00
+        });
+
+        // Mobile sidebar toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileSidebar = document.getElementById('mobile-sidebar');
+        const sidebarOverlay = document.getElementById('sidebar-overlay');
+        const closeSidebarButton = document.getElementById('close-sidebar');
+        const menuIcon = document.getElementById('menu-icon');
+
+        function toggleSidebar() {
+            const isOpen = mobileSidebar.classList.contains('open');
+            mobileSidebar.classList.toggle('open');
+            sidebarOverlay.classList.toggle('open');
+            menuIcon.classList.toggle('fa-bars');
+            menuIcon.classList.toggle('fa-times');
+            mobileMenuButton.setAttribute('aria-expanded', isOpen ? 'false' : 'true');
+            document.body.style.overflow = isOpen ? 'auto' : 'hidden';
+        }
+
+        mobileMenuButton.addEventListener('click', toggleSidebar);
+        closeSidebarButton.addEventListener('click', toggleSidebar);
+        sidebarOverlay.addEventListener('click', toggleSidebar);
+
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                    
+                    // Close sidebar if open
+                    if (mobileSidebar.classList.contains('open')) {
+                        toggleSidebar();
+                    }
+                }
+            });
+        });
+
+        // View Projects button functionality
+        const viewProjectsButton = document.getElementById('view-projects-btn');
+        viewProjectsButton.addEventListener('click', () => {
+            const projectsSection = document.getElementById('projects');
+            if (projectsSection) {
+                window.scrollTo({
+                    top: projectsSection.offsetTop - 80,
+                    behavior: 'smooth'
+                });
+                
+                // Close sidebar if open
+                if (mobileSidebar.classList.contains('open')) {
+                    toggleSidebar();
+                }
+            }
+        });
+
+        // Animate elements when scrolled into view
+        const animateOnScroll = () => {
+            const elements = document.querySelectorAll('.project-card, .skill-pill, .glass-card');
+            
+            elements.forEach(element => {
+                const elementPosition = element.getBoundingClientRect().top;
+                const screenPosition = window.innerHeight / 1.2;
+                
+                if (elementPosition < screenPosition) {
+                    element.style.opacity = '1';
+                    element.style.transform = 'translateY(0)';
+                }
+            });
+        };
+
+        // Set initial styles for animated elements
+        document.querySelectorAll('.project-card, .skill-pill, .glass-card').forEach(element => {
+            element.style.opacity = '0';
+            element.style.transform = 'translateY(20px)';
+            element.style.transition = 'all 0.5s ease';
+        });
+
+        // Run once on load
+        animateOnScroll();
+
+        // Run on scroll
+        window.addEventListener('scroll', animateOnScroll);
+
+        // Performance optimization for images
+        document.addEventListener('DOMContentLoaded', function() {
+            const images = document.querySelectorAll('img.portfolio-image');
+            
+            images.forEach(img => {
+                const tempImg = new Image();
+                tempImg.src = img.src;
+                tempImg.onload = function() {
+                    img.style.display = 'block';
+                };
+                tempImg.onerror = function() {
+                    if (img.src.includes('project.png')) {
+                        img.src = 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80';
+                    } else if (img.src.includes('tht.jpeg')) {
+                        img.src = 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=880&q=80';
+                    }
+                };
+            });
+        });
+    </script>
+    <!-- JS for Scroll Autoplay -->
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+  const videos = document.querySelectorAll(".portfolio-video");
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        entry.target.play();
+      } else {
+        entry.target.pause();
+      }
+    });
+  }, { threshold: 0.5 }); // 50% visible
+
+  videos.forEach(video => observer.observe(video));
+});
+</script>
+</body>
+</html>
